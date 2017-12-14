@@ -9,17 +9,9 @@ npm install
 ```shell=
 npm generate
 ```
-or
-```shell=
-node init.js
-```
 
 ## Run
 
 ```shell=
 npm start
-```
-or
-```shell=
-node index.js
 ```
