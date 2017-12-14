@@ -1,9 +1,15 @@
-const express = require('express');
-const app = express();
-const http = require('http').Server(app);
-const io = require('socket.io')(http);
 const rsaWrapper = require('./components/rsa-wrapper');
 const aesWrapper = require('./components/aes-wrapper');
+const express = require('express');
+const app = express();
+/*const https = require('https').createServer( {
+	key: fs.readFileSync(path.resolve(__dirname, 'keys', 'server.private.pem')),
+    cert: fs.readFileSync(path.resolve(__dirname, 'keys', 'server.cert.pem'))
+    }, app);
+const fs = require('fs');
+const path = require('path');*/
+const http = require('http').Server(app);
+const io = require('socket.io')(http);
 
 rsaWrapper.initLoadServerKeys(__dirname);
 //rsaWrapper.serverExampleEncrypt();
