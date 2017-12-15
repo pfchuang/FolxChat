@@ -68,9 +68,10 @@ S0NoTtJxIJQbVwe4ZyycMQ==
 
 <script>
 
-	var socket = io();
-	var aesKey;
-	
+	const socket = io();
+	const client_aesKey = aesWrapper.generateKey();
+	var server_aesKey;
+
 	$(document).ready(function() {
 		var name = prompt('請輸入暱稱', 'guest');
 
@@ -89,22 +90,28 @@ S0NoTtJxIJQbVwe4ZyycMQ==
 		});
 
 		socket.on('chat message', function(data) {
-			/*aesWrapper.decryptMessage(aesKey, data.msg).then(function(decrypted) {
-				appendMessage(data.username + ' : ' + decrypted);
-			});*/
-			appendMessage(data.username + ' : ' + data.msg);
+			aesWrapper.decryptMessage(server_aesKey, data.msg).then(function(decrypted) {
+				aesWrapper.decryptMessage(client_aesKey, decrypted).then(function(decrypted) {
+					appendMessage(data.username + ' : ' + decrypted);
+				});
+			});
+			//appendMessage(data.username + ' : ' + data.msg); //demo
+		});
+/////
+		rsaWrapper.publicEncrypt(document.getElementById('server_public').value, client_aesKey).then(function(encrypted) {
+			socket.emit('send aes key from client to server', encrypted);
 		});
 
-		socket.on('send key from server to client', function(data) {
+		socket.on('send aes key from server to client', function(data) {
 			rsaWrapper.privateDecrypt(document.getElementById('client_private').value, data)
 			.then(function(key) {
-				aesKey = key;
+				server_aesKey = key;
 			});
-		});
+		});///////
 
 		$('#send').click(function() {
 			var text = $('#m').val();
-			aesWrapper.encryptMessage(aesKey, text).then(function(encrypted) {
+			aesWrapper.encryptMessage(client_aesKey, text).then(function(encrypted) {
 				socket.emit('chat message', encrypted);
 			});
 			$('#m').val('');

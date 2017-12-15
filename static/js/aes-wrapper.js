@@ -4,7 +4,12 @@
 
 	var crypto = window.crypto.subtle;
 
-	function importPublicKey(key){
+	function generateKey() {
+		let key = window.crypto.getRandomValues(new Uint8Array(32));
+		return converterWrapper.arrayBufferToBase64String(key);
+	}
+
+	function importPublicKey(key) {
 		return new Promise(function(resolve, reject) {
 			crypto.importKey("raw", converterWrapper.base64StringToArrayBuffer(key),
 				{name: "AES-CBC"}, false, ["encrypt", "decrypt"])
@@ -58,6 +63,7 @@
 	}
 
 	window.aesWrapper = {
+		generateKey: generateKey,
 		encryptMessage: encryptMessage,
 		decryptMessage: decryptMessage,
 		importPublicKey: importPublicKey,

@@ -44,7 +44,7 @@ aesWrapper.decrypt = (key, text) => {
 
 aesWrapper.addIvToBody = (iv, encryptedBase64) => {
 	encryptedBase64 += iv.toString('base64');
-	console.log(iv.toString('base64'));
+	//console.log(iv.toString('base64'));
 
 	return encryptedBase64;
 };

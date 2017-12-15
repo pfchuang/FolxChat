@@ -12,10 +12,15 @@ app.use(express.static(__dirname + '/static'));
 
 io.on('connection', function(socket) {
 
-	const aesKey = aesWrapper.generateKey();
-	let encryptedAesKey = rsaWrapper.encrypt(rsaWrapper.clientPub, (aesKey.toString('base64')));
-	socket.emit('send key from server to client', encryptedAesKey);
-	
+	let client_aesKey;
+	const server_aesKey = aesWrapper.generateKey();
+	let encryptedAesKey = rsaWrapper.encrypt(rsaWrapper.clientPub, (server_aesKey.toString('base64')));
+
+	socket.emit('send aes key from server to client', encryptedAesKey);////
+
+	socket.on('send aes key from client to server', function(data) {
+		client_aesKey = rsaWrapper.decrypt(rsaWrapper.serverPrivate, data);
+	});////
 
 	socket.on('add user', function(name) {
 		socket.username = name;
@@ -26,12 +31,12 @@ io.on('connection', function(socket) {
 	});
 
 	socket.on('chat message', function(data) {
-		let msg = aesWrapper.decrypt(aesKey, data);   
-		// wait for 2 aes key to encrypt msg
-		console.log(socket.username + ' : ' + data);
+		//double encrypt  
+		let msg = aesWrapper.createAesMessage(server_aesKey, data);
+		console.log(socket.username + ' : ' + msg);
 		io.emit('chat message', {
 			username: socket.username,
-			msg: data
+			msg: msg
 		});
 	});
 
