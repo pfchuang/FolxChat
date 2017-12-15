@@ -89,9 +89,10 @@ S0NoTtJxIJQbVwe4ZyycMQ==
 		});
 
 		socket.on('chat message', function(data) {
-			aesWrapper.decryptMessage(aesKey, data.msg).then(function(decrypted) {
-				appendMessage(data.username + ' : ' + data.msg);
-			});
+			/*aesWrapper.decryptMessage(aesKey, data.msg).then(function(decrypted) {
+				appendMessage(data.username + ' : ' + decrypted);
+			});*/
+			appendMessage(data.username + ' : ' + data.msg);
 		});
 
 		socket.on('send key from server to client', function(data) {
