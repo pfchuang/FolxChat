@@ -111,6 +111,8 @@ S0NoTtJxIJQbVwe4ZyycMQ==
 
 		$('#send').click(function() {
 			var text = $('#m').val();
+			if (text == '')
+				return;
 			aesWrapper.encryptMessage(client_aesKey, text).then(function(encrypted) {
 				socket.emit('chat message', encrypted);
 			});
