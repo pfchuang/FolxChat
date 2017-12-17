@@ -38,9 +38,9 @@
 		return new Promise(function(resolve, reject) {
 			importPublicKey(key).then(function(key) {
 				crypto.encrypt({name: "AES-CBC", iv: iv}, key,
-					converterWrapper.str2abUtf8(message)
-				).then(function(encrypted) {
-					encrypted =getMessageWithIv(encrypted, iv);
+					converterWrapper.str2abUtf8(message))
+				.then(function(encrypted) {
+					encrypted = getMessageWithIv(encrypted, iv);
 					resolve(encrypted);
 				});
 			});
@@ -54,8 +54,8 @@
 				crypto.decrypt({name: "AES-CBC",
 					            iv: converterWrapper.base64StringToArrayBuffer(data['iv'])},
 					            key,
-					            converterWrapper.base64StringToArrayBuffer(data['message'])
-				).then(function(decrypted) {
+					            converterWrapper.base64StringToArrayBuffer(data['message']))
+				.then(function(decrypted) {
 					resolve(converterWrapper.arrayBufferToUtf8(decrypted));
 				});
 			});

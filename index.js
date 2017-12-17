@@ -32,11 +32,12 @@ io.on('connection', function(socket) {
 
 	socket.on('chat message', function(data) {
 		//double encrypt  
-		let msg = aesWrapper.createAesMessage(server_aesKey, data);
+		let msg = aesWrapper.createAesMessage(server_aesKey, data.enc);
 		console.log(socket.username + ' : ' + msg);
 		io.emit('chat message', {
 			username: socket.username,
-			msg: msg
+			msg: msg,
+			sha: data.sha
 		});
 	});
 

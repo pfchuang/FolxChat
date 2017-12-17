@@ -63,6 +63,7 @@ S0NoTtJxIJQbVwe4ZyycMQ==
 <script src="/js/converter-wrapper.js"></script>
 <script src="/js/rsa-wrapper.js"></script>
 <script src="/js/aes-wrapper.js"></script>
+<script src="/js/sha-wrapper.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.2.0/socket.io.js" integrity="sha256-FdJmJjvYZDWGa7+g9T9z68ylBWPK06W67sa/KwCDBTI=" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.1/jquery.js" integrity="sha256-MCmDSoIMecFUw3f1LicZ/D/yonYAoHrgiep/3pCH9rw=" crossorigin="anonymous"></script>
 
@@ -72,6 +73,7 @@ S0NoTtJxIJQbVwe4ZyycMQ==
 	//const client_aesKey = aesWrapper.generateKey();
 	const client_aesKey = 'vzbep7/WEYYcT7rMP4c8jVzfT3GkpjI5ZxIo+N074Ms=';
 	let server_aesKey;
+	//let sha_text;
 
 	$(document).ready(function() {
 		var name = prompt('請輸入暱稱', 'guest');
@@ -92,6 +94,7 @@ S0NoTtJxIJQbVwe4ZyycMQ==
 
 		socket.on('chat message', function(data) {
 			console.log(data.msg);
+			let send_sha = data.sha;
 			aesWrapper.decryptMessage(server_aesKey, data.msg).then(function(decrypted) {
 				aesWrapper.decryptMessage(client_aesKey, decrypted).then(function(decrypted) {
 					appendMessage(data.username + ' : ' + decrypted);
@@ -111,14 +114,21 @@ S0NoTtJxIJQbVwe4ZyycMQ==
 			});
 		});
 
-
 		$('#send').click(function() {
 			var text = $('#m').val();
 			if (text == '')
 				return;
-			aesWrapper.encryptMessage(client_aesKey, text).then(function(encrypted) {
-				socket.emit('chat message', encrypted);
+
+			shaWrapper.sha256(text).then(function(hash) {
+				aesWrapper.encryptMessage(client_aesKey, text).then(function(encrypted) {
+					socket.emit('chat message', {
+						enc: encrypted,
+						sha: hash
+					});
+				});
 			});
+			
+			
 			$('#m').val('');
 			return false;
 		});
