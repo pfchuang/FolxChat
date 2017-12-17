@@ -7,13 +7,14 @@ const aesWrapper = require('./components/aes-wrapper');
 
 rsaWrapper.initLoadServerKeys(__dirname);
 //rsaWrapper.serverExampleEncrypt();
+const server_aesKey = aesWrapper.generateKey();
 
 app.use(express.static(__dirname + '/static'));
 
 io.on('connection', function(socket) {
 
 	let client_aesKey;
-	const server_aesKey = aesWrapper.generateKey();
+	//const server_aesKey = aesWrapper.generateKey();
 	let encryptedAesKey = rsaWrapper.encrypt(rsaWrapper.clientPub, (server_aesKey.toString('base64')));
 
 	socket.emit('send aes key from server to client', encryptedAesKey);////
