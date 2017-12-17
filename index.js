@@ -9,18 +9,11 @@ rsaWrapper.initLoadServerKeys(__dirname);
 //rsaWrapper.serverExampleEncrypt();
 
 let client_aesKey;
-const server_aesKey = aesWrapper.generateKey();
-let encryptedAesKey = rsaWrapper.encrypt(rsaWrapper.clientPub, (server_aesKey.toString('base64')));
+let server_aesKey;
 
 app.use(express.static(__dirname + '/static'));
 
 io.on('connection', function(socket) {
-
-	socket.emit('send aes key from server to client', encryptedAesKey);
-
-	socket.on('send aes key from client to server', function(data) {
-		client_aesKey = rsaWrapper.decrypt(rsaWrapper.serverPrivate, data);
-	});
 
 	socket.on('add user', function(name) {
 		socket.username = name;
@@ -31,13 +24,16 @@ io.on('connection', function(socket) {
 	});
 
 	socket.on('chat message', function(data) {
-		//double encrypt  
+		//double encrypt
+		server_aesKey = aesWrapper.generateKey();
 		let msg = aesWrapper.createAesMessage(server_aesKey, data.enc);
 		console.log(socket.username + ' : ' + msg);
 		io.emit('chat message', {
 			username: socket.username,
 			msg: msg,
-			sha: data.sha
+			hash: data.hash,
+			s_key: rsaWrapper.encrypt(rsaWrapper.clientPub, server_aesKey.toString('base64')),
+			c_key: rsaWrapper.encrypt(rsaWrapper.clientPub, rsaWrapper.decrypt(rsaWrapper.serverPrivate, data.key))
 		});
 	});
 

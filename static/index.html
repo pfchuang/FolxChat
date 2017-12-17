@@ -70,10 +70,8 @@ S0NoTtJxIJQbVwe4ZyycMQ==
 <script>
 
 	const socket = io();
-	//const client_aesKey = aesWrapper.generateKey();
-	const client_aesKey = 'vzbep7/WEYYcT7rMP4c8jVzfT3GkpjI5ZxIo+N074Ms=';
 	let server_aesKey;
-	//let sha_text;
+	let other_client_aesKey;
 
 	$(document).ready(function() {
 		var name = prompt('請輸入暱稱', 'guest');
@@ -93,24 +91,24 @@ S0NoTtJxIJQbVwe4ZyycMQ==
 		});
 
 		socket.on('chat message', function(data) {
-			console.log(data.msg);
-			let send_sha = data.sha;
-			aesWrapper.decryptMessage(server_aesKey, data.msg).then(function(decrypted) {
-				aesWrapper.decryptMessage(client_aesKey, decrypted).then(function(decrypted) {
-					appendMessage(data.username + ' : ' + decrypted);
-				});
-			});
+			console.log(data.username + ' : ' + data.msg);
+			let send_hash = data.hash;
 			//appendMessage(data.username + ' : ' + data.msg); //demo
-		});
-
-		rsaWrapper.publicEncrypt(document.getElementById('server_public').value, client_aesKey).then(function(encrypted) {
-			socket.emit('send aes key from client to server', encrypted);
-		});
-
-		socket.on('send aes key from server to client', function(data) {
-			rsaWrapper.privateDecrypt(document.getElementById('client_private').value, data)
-			.then(function(key) {
-				server_aesKey = key;
+			rsaWrapper.privateDecrypt(document.getElementById('client_private').value, data.c_key).then(function(client_aesKey) {
+				rsaWrapper.privateDecrypt(document.getElementById('client_private').value, data.s_key).then(function(server_aesKey) {
+					aesWrapper.decryptMessage(server_aesKey, data.msg).then(function(s_decrypted) {
+						aesWrapper.decryptMessage(client_aesKey, s_decrypted).then(function(decrypted) {
+							shaWrapper.sha256(decrypted).then(function(hash) {
+								if (hash != send_hash) {
+									appendMessage(data.username + ' : ' + decrypted + ' < message was altered ! >');
+								}
+								else {
+									appendMessage(data.username + ' : ' + decrypted);
+								}
+							});
+						});
+					});
+				});
 			});
 		});
 
@@ -118,12 +116,15 @@ S0NoTtJxIJQbVwe4ZyycMQ==
 			var text = $('#m').val();
 			if (text == '')
 				return;
-
-			shaWrapper.sha256(text).then(function(hash) {
-				aesWrapper.encryptMessage(client_aesKey, text).then(function(encrypted) {
-					socket.emit('chat message', {
-						enc: encrypted,
-						sha: hash
+			let client_aesKey = aesWrapper.generateKey();
+			rsaWrapper.publicEncrypt(document.getElementById('server_public').value, client_aesKey).then(function(encryptedAesKey) {
+				shaWrapper.sha256(text).then(function(hash) {
+					aesWrapper.encryptMessage(client_aesKey, text).then(function(encrypted) {
+						socket.emit('chat message', {
+							enc: encrypted,
+							hash: hash,
+							key: encryptedAesKey
+						});
 					});
 				});
 			});
