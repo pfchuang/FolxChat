@@ -4,14 +4,16 @@
 npm install
 ```
 
+## Run
+
+```shell=
+npm start
+```
+
 ## Generate RSA Keys (optional)
 
 ```shell=
 npm generate
 ```
 
-## Run
-
-```shell=
-npm start
-```
+note: remember to replace with new rsa keys.
