@@ -71,7 +71,7 @@ S0NoTtJxIJQbVwe4ZyycMQ==
 	const socket = io();
 	//const client_aesKey = aesWrapper.generateKey();
 	const client_aesKey = 'vzbep7/WEYYcT7rMP4c8jVzfT3GkpjI5ZxIo+N074Ms=';
-	var server_aesKey;
+	let server_aesKey;
 
 	$(document).ready(function() {
 		var name = prompt('請輸入暱稱', 'guest');
@@ -91,6 +91,7 @@ S0NoTtJxIJQbVwe4ZyycMQ==
 		});
 
 		socket.on('chat message', function(data) {
+			console.log(data.msg);
 			aesWrapper.decryptMessage(server_aesKey, data.msg).then(function(decrypted) {
 				aesWrapper.decryptMessage(client_aesKey, decrypted).then(function(decrypted) {
 					appendMessage(data.username + ' : ' + decrypted);
@@ -98,7 +99,7 @@ S0NoTtJxIJQbVwe4ZyycMQ==
 			});
 			//appendMessage(data.username + ' : ' + data.msg); //demo
 		});
-/////
+
 		rsaWrapper.publicEncrypt(document.getElementById('server_public').value, client_aesKey).then(function(encrypted) {
 			socket.emit('send aes key from client to server', encrypted);
 		});
@@ -107,10 +108,8 @@ S0NoTtJxIJQbVwe4ZyycMQ==
 			rsaWrapper.privateDecrypt(document.getElementById('client_private').value, data)
 			.then(function(key) {
 				server_aesKey = key;
-				console.log(server_aesKey);
-				console.log(client_aesKey);
 			});
-		});///////
+		});
 
 
 		$('#send').click(function() {
