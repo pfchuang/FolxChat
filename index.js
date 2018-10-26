@@ -6,10 +6,8 @@ const rsaWrapper = require('./components/rsa-wrapper');
 const aesWrapper = require('./components/aes-wrapper');
 
 rsaWrapper.initLoadServerKeys(__dirname);
-//rsaWrapper.serverExampleEncrypt();
 
-let client_aesKey;
-let server_aesKey;
+let serverAesKey;
 
 app.use(express.static(__dirname + '/static'));
 
@@ -25,15 +23,15 @@ io.on('connection', function(socket) {
 
 	socket.on('chat message', function(data) {
 		//double encrypt
-		server_aesKey = aesWrapper.generateKey();
-		let msg = aesWrapper.createAesMessage(server_aesKey, data.enc);
+		serverAesKey = aesWrapper.generateKey();
+		let msg = aesWrapper.createAesMessage(serverAesKey, data.enc);
 		console.log(socket.username + ' : ' + msg);
 		io.emit('chat message', {
 			username: socket.username,
 			msg: msg,
 			hash: data.hash,
-			s_key: rsaWrapper.encrypt(rsaWrapper.clientPub, server_aesKey.toString('base64')),
-			c_key: rsaWrapper.encrypt(rsaWrapper.clientPub, rsaWrapper.decrypt(rsaWrapper.serverPrivate, data.key))
+			serverKey: rsaWrapper.encrypt(rsaWrapper.clientPublicKey, serverAesKey.toString('base64')),
+			clientKey: rsaWrapper.encrypt(rsaWrapper.clientPublicKey, rsaWrapper.decrypt(rsaWrapper.serverPrivateKey, data.key))
 		});
 	});
 

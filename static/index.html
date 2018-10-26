@@ -83,8 +83,7 @@ S0NoTtJxIJQbVwe4ZyycMQ==
     }
 
 	const socket = io();
-	let server_aesKey;
-	let other_client_aesKey;
+	let serverAesKey;
 
 	$(document).ready(function() {
 		var name = prompt('請輸入暱稱', 'guest');
@@ -105,18 +104,17 @@ S0NoTtJxIJQbVwe4ZyycMQ==
 
 		socket.on('chat message', function(data) {
 			console.log(data.username + ' : ' + data.msg);
-			let send_hash = data.hash;
-			//appendMessage(data.username + ' : ' + data.msg); //demo
-			rsaWrapper.privateDecrypt(document.getElementById('client_private').value, data.c_key).then(function(client_aesKey) {
-				rsaWrapper.privateDecrypt(document.getElementById('client_private').value, data.s_key).then(function(server_aesKey) {
-					aesWrapper.decryptMessage(server_aesKey, data.msg).then(function(s_decrypted) {
-						aesWrapper.decryptMessage(client_aesKey, s_decrypted).then(function(decrypted) {
-							shaWrapper.sha256(decrypted).then(function(hash) {
-								if (hash != send_hash) {
-									appendMessage(time() + ' ' + data.username + ' : ' + decrypted + ' < message was altered ! >');
+			let sendHash = data.hash;
+			rsaWrapper.privateDecrypt(document.getElementById('client_private').value, data.clientKey).then(function(clientAesKey) {
+				rsaWrapper.privateDecrypt(document.getElementById('client_private').value, data.serverKey).then(function(serverAesKey) {
+					aesWrapper.decryptMessage(serverAesKey, data.msg).then(function(firstDecrypt) {
+						aesWrapper.decryptMessage(clientAesKey, firstDecrypt).then(function(secondDecrypt) {
+							shaWrapper.sha256(secondDecrypt).then(function(hash) {
+								if (hash != sendHash) {
+									appendMessage(time() + ' ' + data.username + ' : ' + secondDecrypt + ' < message was altered ! >');
 								}
 								else {
-									appendMessage(time() + ' ' + data.username + ' : ' + decrypted);
+									appendMessage(time() + ' ' + data.username + ' : ' + secondDecrypt);
 								}
 							});
 						});
@@ -129,12 +127,12 @@ S0NoTtJxIJQbVwe4ZyycMQ==
 			var text = $('#m').val();
 			if (text == '')
 				return;
-			let client_aesKey = aesWrapper.generateKey();
-			rsaWrapper.publicEncrypt(document.getElementById('server_public').value, client_aesKey).then(function(encryptedAesKey) {
+			let clientAesKey = aesWrapper.generateKey();
+			rsaWrapper.publicEncrypt(document.getElementById('server_public').value, clientAesKey).then(function(encryptedAesKey) {
 				shaWrapper.sha256(text).then(function(hash) {
-					aesWrapper.encryptMessage(client_aesKey, text).then(function(encrypted) {
+					aesWrapper.encryptMessage(clientAesKey, text).then(function(encMessage) {
 						socket.emit('chat message', {
-							enc: encrypted,
+							enc: encMessage,
 							hash: hash,
 							key: encryptedAesKey
 						});

@@ -5,9 +5,9 @@ const NodeRSA = require('node-rsa');
 const crypto = require('crypto');
 
 rsaWrapper.initLoadServerKeys = (basePath) => {
-	rsaWrapper.serverPub = fs.readFileSync(path.resolve(basePath, 'keys', 'server.public.pem'));
-	rsaWrapper.serverPrivate = fs.readFileSync(path.resolve(basePath, 'keys', 'server.private.pem'));
-	rsaWrapper.clientPub = fs.readFileSync(path.resolve(basePath, 'keys', 'client.public.pem'));
+	rsaWrapper.serverPublicKey = fs.readFileSync(path.resolve(basePath, 'keys', 'server.public.pem'));
+	rsaWrapper.serverPrivateKey = fs.readFileSync(path.resolve(basePath, 'keys', 'server.private.pem'));
+	rsaWrapper.clientPublicKey = fs.readFileSync(path.resolve(basePath, 'keys', 'client.public.pem'));
 };
 
 rsaWrapper.generate = (direction) => {
@@ -40,9 +40,9 @@ rsaWrapper.decrypt = (privateKey, message) => {
 rsaWrapper.serverExampleEncrypt = () => {
 	console.log('Server public encrypting');
 	
-	let enc = rsaWrapper.encrypt(rsaWrapper.serverPub, 'Server init hello');
+	let enc = rsaWrapper.encrypt(rsaWrapper.serverPublicKey, 'Server init hello');
 	console.log('Encrypted RSA string ', '\n', enc);
-	let dec = rsaWrapper.decrypt(rsaWrapper.serverPrivate, enc);
+	let dec = rsaWrapper.decrypt(rsaWrapper.serverPrivateKey, enc);
 	console.log('Decrypted RSA string ...');
 	console.log(dec);
 }
